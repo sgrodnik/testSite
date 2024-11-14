@@ -29,6 +29,14 @@
             margin-right: 10px;
         }
 
+        li:hover {
+            background-color: #f0f0f0;
+        }
+
+        li.highlight {
+            background-color: #dcdcdc;
+        }
+
         #contextMenu {
             display: none;
             position: absolute;
@@ -47,12 +55,10 @@
             background-color: #ddd;
         }
 
-        /* Увеличиваем поле ввода */
         textarea {
             width: 100%;
-            height: 150px;
-            padding: 10px;
-            font-size: 14px;
+            height: 2em;
+            padding: 5px;
             resize: vertical;
         }
     </style>
@@ -61,7 +67,7 @@
 <body>
     <div class="container">
         <h2>Список покупок</h2>
-        <textarea id="itemInput" placeholder="Добавить новые элементы, каждый с новой строки"></textarea>
+        <textarea id="itemInput" placeholder="Добавить новые элементы,&#10;каждый с новой строки"></textarea>
         <br>
         <button onclick="addItem()">Добавить</button>
         <ul id="itemList"></ul>
@@ -110,6 +116,8 @@
             contextMenu.style.top = `${event.pageY}px`;
             contextMenu.style.display = 'block';
 
+            listItem.classList.add('highlight'); // Выделяем элемент при вызове контекстного меню
+
             // Обработчик для кнопки удаления в контекстном меню
             document.getElementById("deleteOption").onclick = function () {
                 listItem.remove();
@@ -126,9 +134,11 @@
             };
         }
 
-        // Закрываем меню при клике в любом другом месте
+        // Закрываем меню при клике в любом другом месте и убираем выделение
         document.addEventListener("click", function () {
             document.getElementById("contextMenu").style.display = 'none';
+            const highlightedItems = document.querySelectorAll('.highlight');
+            highlightedItems.forEach(item => item.classList.remove('highlight')); // Убираем выделение
         });
 
         function clearList() {
@@ -164,6 +174,13 @@
                 });
             });
         }
+
+        document.getElementById("itemInput").addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // Предотвращаем стандартное поведение Enter
+                    addItem(); // Вызываем функцию добавления элемента
+                }
+            });
 
     </script>
 </body>
