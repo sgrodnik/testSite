@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ListShare - Список покупок</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 300px;
+            margin: 20px auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+        }
+
+        li input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        #contextMenu {
+            display: none;
+            position: absolute;
+            background: #fff;
+            border: 1px solid #ccc;
+            list-style-type: none;
+            padding: 5px;
+        }
+
+        #contextMenu li {
+            padding: 5px;
+            cursor: pointer;
+        }
+
+        #contextMenu li:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Список покупок</h2>
+        <textarea id="itemInput" placeholder="Добавить новые элементы, каждый с новой строки"></textarea>
+        <br>
+        <button onclick="addItem()">Добавить</button>
+        <ul id="itemList"></ul>
+    </div>
+
+    <!-- Скрытое меню ПКМ -->
+    <ul id="contextMenu">
+        <li id="deleteOption">Удалить</li>
+        <li id="clearListOption">Очистить список</li>
+    </ul>
+
+    <script>
+        window.onload = loadItems;
+
+        function addItem() {
+            const itemText = document.getElementById("itemInput").value.trim();
+            if (itemText === "") return;
+
+            const items = itemText.split("\n").map(line => line.trim()).filter(line => line);
+
+            items.forEach(text => {
+                const listItem = document.createElement("li");
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.addEventListener("change", saveItems);
+
+                listItem.appendChild(checkbox);
+                listItem.appendChild(document.createTextNode(text));
+                document.getElementById("itemList").appendChild(listItem);
+
+                // Добавляем обработчик правого клика (ПКМ)
+                listItem.addEventListener("contextmenu", function (event) {
+                    event.preventDefault(); // Отключаем стандартное меню
+                    showContextMenu(event, listItem); // Показать контекстное меню
+                });
+            });
+
+            document.getElementById("itemInput").value = "";
+            saveItems();
+        }
+
+        function showContextMenu(event, listItem) {
+            const contextMenu = document.getElementById("contextMenu");
+            contextMenu.style.left = `${event.pageX}px`;
+            contextMenu.style.top = `${event.pageY}px`;
+            contextMenu.style.display = 'block';
+
+            // Обработчик для кнопки удаления в контекстном меню
+            document.getElementById("deleteOption").onclick = function () {
+                listItem.remove();
+                saveItems();
+                contextMenu.style.display = 'none'; // Скрыть меню после удаления
+            };
+
+            // Обработчик для очистки списка в контекстном меню
+            document.getElementById("clearListOption").onclick = function () {
+                if (confirm("Вы уверены, что хотите очистить весь список?")) {
+                    clearList();
+                }
+                contextMenu.style.display = 'none'; // Скрыть меню после действия
+            };
+        }
+
+        // Закрываем меню при клике в любом другом месте
+        document.addEventListener("click", function () {
+            document.getElementById("contextMenu").style.display = 'none';
+        });
+
+        function clearList() {
+            document.getElementById("itemList").innerHTML = "";
+            localStorage.removeItem("shoppingList");
+        }
+
+        function saveItems() {
+            const items = Array.from(document.querySelectorAll("#itemList li")).map(li => ({
+                text: li.textContent.trim(),
+                checked: li.querySelector("input").checked
+            }));
+            localStorage.setItem("shoppingList", JSON.stringify(items));
+        }
+
+        function loadItems() {
+            const items = JSON.parse(localStorage.getItem("shoppingList")) || [];
+            items.forEach(item => {
+                const listItem = document.createElement("li");
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.checked = item.checked;
+                checkbox.addEventListener("change", saveItems);
+
+                listItem.appendChild(checkbox);
+                listItem.appendChild(document.createTextNode(item.text));
+                document.getElementById("itemList").appendChild(listItem);
+
+                // Добавляем обработчик правого клика (ПКМ)
+                listItem.addEventListener("contextmenu", function (event) {
+                    event.preventDefault(); // Отключаем стандартное меню
+                    showContextMenu(event, listItem); // Показать контекстное меню
+                });
+            });
+        }
+
+    </script>
+</body>
+
+</html>
