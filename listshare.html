@@ -101,8 +101,17 @@
 
                 // Добавляем обработчик правого клика (ПКМ)
                 listItem.addEventListener("contextmenu", function (event) {
-                    event.preventDefault(); // Отключаем стандартное меню
-                    showContextMenu(event, listItem); // Показать контекстное меню
+                    event.preventDefault();
+                    showContextMenu(event, listItem);
+                });
+                
+                listItem.addEventListener("touchstart", function (event) {
+                    const longPressTimeout = setTimeout(() => {
+                        showContextMenu(event, listItem);
+                    }, 500); // 500 мс для долгого тапа
+                
+                    listItem.addEventListener("touchend", () => clearTimeout(longPressTimeout), { once: true });
+                    listItem.addEventListener("touchmove", () => clearTimeout(longPressTimeout), { once: true });
                 });
             });
 
